@@ -1,0 +1,30 @@
+CREATE DATABASE futbol;
+USE futbol;
+CREATE table competicion (
+	nombre VARCHAR(50) primary key,
+	num_equipos int NULL
+);
+CREATE TABLE equipo (
+    nombre VARCHAR(50) PRIMARY KEY,
+    competicion VARCHAR(50),
+    FOREIGN KEY (competicion) REFERENCES competicion(nombre)
+);
+CREATE TABLE jugador (
+    id INT PRIMARY KEY,
+    nombre VARCHAR(50),
+    equipo VARCHAR(50),
+    FOREIGN KEY (equipo) REFERENCES equipo(nombre)
+);
+CREATE TABLE entrenador (
+    id INT PRIMARY KEY,
+    nombre VARCHAR(50),
+    equipo VARCHAR(50),
+    FOREIGN KEY (equipo) REFERENCES equipo(nombre)
+);
+INSERT INTO competicion (nombre, num_equipos)
+VALUES ('LaLiga', 20),
+       ('Premier League', 20);
+INSERT INTO equipo (nombre, competicion)
+VALUES ('Real Madrid', 'LaLiga'),
+       ('Barcelona', 'LaLiga'),
+       ('Liverpool', 'Premier League');
