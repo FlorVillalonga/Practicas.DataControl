@@ -21,10 +21,14 @@ CREATE TABLE entrenador (
     equipo VARCHAR(50),
     FOREIGN KEY (equipo) REFERENCES equipo(nombre)
 );
-INSERT INTO competicion (nombre, num_equipos)
-VALUES ('LaLiga', 20),
-       ('Premier League', 20);
-INSERT INTO equipo (nombre, competicion)
-VALUES ('Real Madrid', 'LaLiga'),
-       ('Barcelona', 'LaLiga'),
-       ('Liverpool', 'Premier League');
+ALTER TABLE competicion ADD alcance VARCHAR(50);
+ALTER TABLE equipo ADD colores VARCHAR(50);
+ALTER TABLE jugador CHANGE id dni INT;
+ALTER TABLE competicion DROP COLUMN alcance;
+ALTER TABLE equipo DROP COLUMN colores;
+DROP TABLE entrenador;
+CREATE DATABASE futbol_copia;
+CREATE TABLE futbol_copia.competicion LIKE futbol.competicion;
+CREATE TABLE futbol_copia.equipo LIKE futbol.equipo;
+CREATE TABLE futbol_copia.jugador LIKE futbol.jugador;
+DROP DATABASE futbol_copia;
