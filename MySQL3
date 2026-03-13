@@ -168,3 +168,91 @@ DELIMITER ;
 
 CALL poblar_pedidos(800);
 DROP PROCEDURE poblar_pedidos;
+
+#PASO 1 
+USE tienda;
+
+INSERT INTO cliente (nombre, edad)
+VALUES 
+('Florencia Villalonga', 33),
+('Pepito el Pistolero', 1);
+
+INSERT INTO producto (nombre, categoria)
+VALUES ('pelota', 'Deportes');
+
+INSERT INTO empleado (nombre, categoria)
+VALUES ('Felipe VI', 'Ventas');
+
+INSERT INTO pedido (id_cliente, id_producto, id_empleado, coste, ingreso)
+VALUES (
+    (SELECT MAX(id_cliente) FROM cliente),
+    (SELECT MAX(id_producto) FROM producto),
+    (SELECT MAX(id_empleado) FROM empleado),
+    30,
+    55
+);
+
+#PASO 2
+
+UPDATE cliente
+SET edad = 40
+WHERE id_cliente = 3001;
+
+UPDATE producto
+SET categoria = 'Fitness'
+WHERE id_producto = 51;
+
+UPDATE empleado
+SET categoria = 'Gerencia'
+WHERE id_empleado = 103;
+
+#PASO 3 
+
+
+DELETE FROM pedido
+WHERE id_pedido = 801;
+
+DELETE FROM producto
+WHERE id_producto = 51;
+
+DELETE FROM cliente
+WHERE id_cliente = 3001;
+
+#PASO 4
+
+SELECT * 
+FROM producto
+WHERE categoria = 'Deportes';
+
+SELECT * 
+FROM pedido
+WHERE coste < 50
+ORDER BY coste ASC;
+
+SELECT AVG(edad) AS edad_media
+FROM empleado;
+
+SELECT id_pedido, (ingreso - coste) AS beneficio
+FROM pedido;
+
+SELECT c.nombre, COUNT(p.id_pedido) AS total_pedidos
+FROM cliente c
+JOIN pedido p ON c.id_cliente = p.id_cliente
+GROUP BY c.nombre
+ORDER BY total_pedidos DESC;
+
+SELECT pr.categoria, COUNT(p.id_pedido) AS total_pedidos
+FROM pedido p
+JOIN producto pr ON p.id_producto = pr.id_producto
+GROUP BY pr.categoria;
+
+SELECT nombre
+FROM producto
+WHERE id_producto NOT IN (
+    SELECT id_producto FROM pedido
+);
+
+SELECT p.id_pedido, pr.categoria
+FROM pedido p
+JOIN producto pr ON p.id_producto = pr.id_producto
+WHERE p.ingreso > 50;
