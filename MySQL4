@@ -1,0 +1,298 @@
+USE empresa;
+
+DROP TABLE IF EXISTS pedido;
+DROP TABLE IF EXISTS proveedor;
+DROP TABLE IF EXISTS empleado;
+DROP TABLE IF EXISTS cliente;
+DROP TABLE IF EXISTS producto;
+DROP TABLE IF EXISTS departamento;
+DROP TABLE IF EXISTS tienda;
+DROP TABLE IF EXISTS pais;
+
+CREATE TABLE pais (
+    id_pais INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE tienda (
+    id_tienda INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    id_pais INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    CONSTRAINT tienda_pais_fk FOREIGN KEY (id_pais) REFERENCES pais(id_pais)
+);
+
+CREATE TABLE departamento (
+    id_departamento INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE proveedor (
+    id_proveedor INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    tienda INT NOT NULL,
+    CONSTRAINT proveedor_tienda_fk FOREIGN KEY (tienda) REFERENCES tienda(id_tienda)
+);
+
+CREATE TABLE producto (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    categoria VARCHAR(50) NOT NULL
+);
+CREATE TABLE cliente (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    edad INT NOT NULL
+);
+CREATE TABLE empleado (
+    id_empleado INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    edad INT NOT NULL,
+    salario DECIMAL(10,2) NOT NULL,
+    departamento INT NOT NULL,
+    tienda INT NOT NULL,
+    CONSTRAINT empleado_departamento_fk FOREIGN KEY (departamento) REFERENCES departamento(id_departamento),
+    CONSTRAINT empleado_tienda_fk FOREIGN KEY (tienda) REFERENCES tienda(id_tienda)
+);
+CREATE TABLE pedido (
+    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    cliente INT NOT NULL,
+    coste DECIMAL(10,2) NOT NULL,
+    ingreso DECIMAL(10,2) NOT NULL,
+    producto INT NOT NULL,
+    tienda INT NOT NULL,
+    empleado INT NOT NULL,
+    CONSTRAINT pedido_cliente_fk FOREIGN KEY (cliente) REFERENCES cliente(id_cliente),
+    CONSTRAINT pedido_producto_fk FOREIGN KEY (producto) REFERENCES producto(id_producto),
+    CONSTRAINT pedido_tienda_fk FOREIGN KEY (tienda) REFERENCES tienda(id_tienda),
+    CONSTRAINT pedido_empleado_fk FOREIGN KEY (empleado) REFERENCES empleado(id_empleado)
+);
+
+USE empresa;
+-- CARGA DE DATOS
+-- PAISES
+INSERT INTO pais (nombre) VALUES
+('España'),
+('Portugal'),
+('Francia'),
+('Italia'),
+('Alemania');
+
+-- TIENDAS
+INSERT INTO tienda (nombre, id_pais, tipo) VALUES
+('Madrid Centro', 1, 'gran almacen'),
+('Barcelona Norte', 1, 'tienda ciudad'),
+('Lisboa Centro', 2, 'gran almacen'),
+('Paris Rivoli', 3, 'tienda ciudad'),
+('Roma Centro', 4, 'gran almacen'),
+('Berlin Mitte', 5, 'tienda ciudad'),
+('Sevilla Sur', 1, 'tienda ciudad'),
+('Valencia Plaza', 1, 'gran almacen'),
+('Oporto Plaza', 2, 'tienda ciudad'),
+('Marsella Sur', 3, 'gran almacen');
+
+-- DEPARTAMENTOS
+INSERT INTO departamento (nombre) VALUES
+('Ventas'),
+('Caja'),
+('Almacen'),
+('Marketing'),
+('RRHH');
+
+-- PROVEEDORES
+INSERT INTO proveedor (nombre, tienda) VALUES
+('Proveedor A', 1),
+('Proveedor B', 2),
+('Proveedor C', 3),
+('Proveedor D', 4),
+('Proveedor E', 5);
+
+-- PRODUCTOS
+INSERT INTO producto (nombre, categoria) VALUES
+('Balon', 'Deportes'),
+('Camiseta', 'Moda'),
+('Portatil', 'Electronica'),
+('Sarten', 'Hogar'),
+('Bicicleta', 'Deportes'),
+('Taladro', 'Bricolaje'),
+('Perfume', 'Belleza'),
+('Teclado', 'Electronica'),
+('Zapatillas', 'Moda'),
+('Mochila', 'Deportes'),
+('Raqueta', 'Deportes'),
+('Pelota tenis', 'Deportes');
+
+-- CLIENTES
+INSERT INTO cliente (nombre, edad) VALUES
+('Ana Ruiz', 25),
+('Luis Gomez', 34),
+('Marta Lopez', 29),
+('Carlos Perez', 41),
+('Elena Martin', 22),
+('Pablo Diaz', 38),
+('Lucia Torres', 27),
+('Sergio Ramos', 31),
+('Claudia Gil', 24),
+('Mario Blanco', 45),
+('Irene Castro', 36),
+('Diego Vega', 28);
+
+-- EMPLEADOS
+INSERT INTO empleado (nombre, edad, salario, departamento, tienda) VALUES
+('Laura Santos', 26, 1500, 1, 1),
+('Mario Diaz', 29, 1450, 2, 2),
+('Paula Ruiz', 35, 1800, 1, 3),
+('David Gomez', 42, 2200, 3, 4),
+('Eva Martin', 31, 2100, 4, 5),
+('Hugo Perez', 27, 1600, 1, 6),
+('Noa Torres', 24, 1400, 2, 7),
+('Alvaro Gil', 39, 2300, 5, 8),
+('Sara Lopez', 28, 1550, 1, 9),
+('Javier Moreno', 33, 1700, 3, 10),
+('Lucia Vega', 23, 1350, 1, 1),
+('Raul Campos', 46, 2500, 5, 3);
+
+-- PEDIDOS
+INSERT INTO pedido (cliente, coste, ingreso, producto, tienda, empleado) VALUES
+(1, 80, 150, 1, 1, 1),
+(1, 75, 140, 5, 2, 2),
+(1, 90, 170, 10, 3, 3),
+(1, 95, 180, 11, 4, 4),
+(1, 88, 160, 12, 5, 5),
+(1, 110, 200, 3, 6, 6),
+(1, 120, 220, 8, 7, 7),
+(1, 130, 240, 2, 8, 8),
+(1, 105, 210, 9, 9, 9),
+(1, 115, 230, 4, 10, 10),
+
+(2, 60, 120, 1, 1, 1),
+(2, 58, 118, 5, 1, 1),
+(2, 62, 125, 10, 1, 1),
+
+(3, 20, 45, 2, 2, 2),
+(4, 35, 60, 3, 3, 3),
+(5, 45, 80, 4, 4, 4),
+(6, 25, 55, 6, 5, 5),
+(7, 40, 70, 7, 6, 6),
+(8, 30, 65, 8, 7, 7),
+(9, 48, 90, 9, 8, 8),
+(10, 52, 110, 10, 9, 9),
+(11, 49, 95, 11, 10, 10),
+(12, 15, 40, 12, 1, 11),
+
+(3, 200, 420, 3, 3, 12),
+(4, 180, 390, 8, 3, 12),
+(5, 210, 450, 1, 5, 5),
+(6, 160, 340, 5, 5, 5),
+(7, 170, 360, 10, 7, 7),
+(8, 175, 365, 11, 7, 7);
+
+-- CONSULTAS
+
+SELECT pa.nombre AS pais,
+       (p.ingreso - p.coste) AS beneficio
+FROM pedido p
+JOIN tienda t ON p.tienda = t.id_tienda
+JOIN pais pa ON t.id_pais = pa.id_pais
+ORDER BY beneficio DESC
+LIMIT 1;
+
+SELECT pa.nombre AS pais,
+       AVG(e.salario) AS salario_medio
+FROM empleado e
+JOIN tienda t ON e.tienda = t.id_tienda
+JOIN pais pa ON t.id_pais = pa.id_pais
+GROUP BY pa.nombre
+ORDER BY salario_medio ASC
+LIMIT 1;
+
+SELECT e.nombre,
+       SUM(p.ingreso) AS ingresos_generados
+FROM empleado e
+JOIN pedido p ON e.id_empleado = p.empleado
+WHERE e.edad < 30
+GROUP BY e.id_empleado, e.nombre
+ORDER BY ingresos_generados DESC;
+
+SELECT c.nombre AS cliente,
+       t.nombre AS tienda,
+       SUM(p.ingreso) AS total_gastado
+FROM pedido p
+JOIN cliente c ON p.cliente = c.id_cliente
+JOIN tienda t ON p.tienda = t.id_tienda
+GROUP BY c.id_cliente, t.id_tienda
+ORDER BY total_gastado DESC
+LIMIT 1;
+
+SELECT c.nombre,
+       COUNT(DISTINCT p.tienda) AS tiendas_distintas,
+       SUM(p.ingreso) AS total_gastado
+FROM pedido p
+JOIN cliente c ON p.cliente = c.id_cliente
+GROUP BY c.id_cliente, c.nombre
+HAVING COUNT(DISTINCT p.tienda) >= 10
+   AND SUM(p.ingreso) >= 100;
+   
+   SELECT d.nombre AS departamento,
+       SUM(p.ingreso - p.coste) AS beneficio_total
+FROM pedido p
+JOIN empleado e ON p.empleado = e.id_empleado
+JOIN departamento d ON e.departamento = d.id_departamento
+GROUP BY d.id_departamento, d.nombre
+ORDER BY beneficio_total ASC;
+
+SELECT t.tipo,
+       COUNT(p.id_pedido) AS total_pedidos
+FROM pedido p
+JOIN tienda t ON p.tienda = t.id_tienda
+GROUP BY t.tipo
+ORDER BY total_pedidos DESC
+LIMIT 1;
+
+SELECT t.tipo,
+       COUNT(DISTINCT p.cliente) AS clientes_distintos
+FROM pedido p
+JOIN tienda t ON p.tienda = t.id_tienda
+GROUP BY t.tipo
+ORDER BY clientes_distintos DESC
+LIMIT 1;
+
+SELECT d.nombre AS departamento,
+       AVG(e.salario) AS salario_medio
+FROM empleado e
+JOIN departamento d ON e.departamento = d.id_departamento
+GROUP BY d.id_departamento, d.nombre
+ORDER BY salario_medio DESC
+LIMIT 1;
+
+SELECT pa.nombre AS pais,
+       COUNT(DISTINCT p.cliente) AS clientes_distintos
+FROM pedido p
+JOIN tienda t ON p.tienda = t.id_tienda
+JOIN pais pa ON t.id_pais = pa.id_pais
+GROUP BY pa.id_pais, pa.nombre
+ORDER BY clientes_distintos ASC;
+
+SELECT c.nombre,
+       COUNT(p.id_pedido) AS total_pedidos
+FROM cliente c
+JOIN pedido p ON c.id_cliente = p.cliente
+GROUP BY c.id_cliente, c.nombre
+ORDER BY total_pedidos DESC;
+
+SELECT t.nombre AS tienda,
+       AVG(e.salario) AS salario_medio
+FROM empleado e
+JOIN tienda t ON e.tienda = t.id_tienda
+GROUP BY t.id_tienda, t.nombre
+ORDER BY salario_medio DESC;
+
+SELECT d.nombre AS departamento,
+       COUNT(e.id_empleado) AS total_empleados
+FROM departamento d
+JOIN empleado e ON d.id_departamento = e.departamento
+GROUP BY d.id_departamento, d.nombre
+ORDER BY total_empleados DESC;
+
+SELECT AVG(edad) AS edad_media_clientes
+FROM cliente;
