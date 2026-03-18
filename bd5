@@ -1,0 +1,198 @@
+CREATE DATABASE Futbol;
+USE Futbol;
+
+CREATE TABLE Liga (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(100) NOT NULL,
+  Pais VARCHAR(50) NOT NULL,
+  Equipos INT NOT NULL DEFAULT 0,
+  EquiposMax INT NOT NULL DEFAULT 20,
+  CONSTRAINT uqLigaNombrePais UNIQUE (Nombre, Pais)
+);
+ 
+CREATE TABLE Equipo (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(120) NOT NULL,
+  LigaID INT,
+  CONSTRAINT uqEquipoNombreLiga UNIQUE (Nombre, LigaID),
+  CONSTRAINT fkEquipoLiga FOREIGN KEY (LigaID) REFERENCES Liga(ID)
+    ON UPDATE CASCADE ON DELETE SET NULL
+);
+ 
+CREATE TABLE Entrenador (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(60) NOT NULL,
+  Apellido VARCHAR(60) NOT NULL,
+  Nacionalidad VARCHAR(50),
+  EquipoID INT,
+  CONSTRAINT uqEntrenadorEquipo UNIQUE (EquipoID),
+  CONSTRAINT fkEntrenadorEquipo FOREIGN KEY (EquipoID) REFERENCES Equipo(ID)
+    ON UPDATE CASCADE ON DELETE SET NULL
+);
+ 
+CREATE TABLE Jugador (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(60) NOT NULL,
+  Apellido VARCHAR(60) NOT NULL,
+  Nacionalidad VARCHAR(50),
+  EquipoID INT,
+  CONSTRAINT fkJugadorEquipo FOREIGN KEY (EquipoID) REFERENCES Equipo(ID)
+    ON UPDATE CASCADE ON DELETE SET NULL
+);
+ 
+CREATE TABLE Posicion (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(50) NOT NULL,
+  CONSTRAINT uqPosicionNombre UNIQUE (Nombre)
+);
+ 
+CREATE TABLE JugadorPosicion (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  JugadorID INT NOT NULL,
+  PosicionID INT NOT NULL,
+  CONSTRAINT uqJugadorPosicion UNIQUE (JugadorID, PosicionID),
+  CONSTRAINT fkJPJugador FOREIGN KEY (JugadorID) REFERENCES Jugador(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fkJPPosicion FOREIGN KEY (PosicionID) REFERENCES Posicion(ID)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+USE Futbol;
+
+INSERT INTO Liga (Nombre, Pais, Equipos, EquiposMax) VALUES
+('LaLiga', 'España', 2, 20),
+('Premier League', 'Inglaterra', 2, 20);
+
+INSERT INTO Equipo (Nombre, LigaID) VALUES
+('Real Madrid', 1),
+('Barcelona', 1),
+('Manchester City', 2),
+('Liverpool', 2);
+
+INSERT INTO Entrenador (Nombre, Apellido, Nacionalidad, EquipoID) VALUES
+('Carlo', 'Ancelotti', 'Italia', 1),
+('Xavi', 'Hernandez', 'España', 2),
+('Pep', 'Guardiola', 'España', 3),
+('Jurgen', 'Klopp', 'Alemania', 4);
+
+INSERT INTO Jugador (Nombre, Apellido, Nacionalidad, EquipoID) VALUES
+('Jude', 'Bellingham', 'Inglaterra', 1),
+('Vinicius', 'Junior', 'Brasil', 1),
+('Dani', 'Carvajal', 'España', 1),
+('Pedri', 'Gonzalez', 'España', 2),
+('Lewandowski', 'Robert', 'Polonia', 2),
+('Gavi', 'Saez', 'España', 2),
+('Haaland', 'Erling', 'Noruega', 3),
+('Rodri', 'Hernandez', 'España', 3),
+('Salah', 'Mohamed', 'Egipto', 4),
+('Alexander-Arnold', 'Trent', 'Inglaterra', 4);
+
+
+INSERT INTO Posicion (Nombre) VALUES
+('Portero'),
+('Defensa'),
+('Centrocampista'),
+('Delantero');
+
+INSERT INTO JugadorPosicion (JugadorID, PosicionID) VALUES
+(1, 3), -- Jude
+(2, 4), -- Vinicius
+(3, 2), -- Carvajal
+(4, 3), -- Pedri
+(5, 4), -- Lewandowski
+(6, 3), -- Gavi
+(7, 4), -- Haaland
+(8, 3), -- Rodri
+(9, 4), -- Salah
+(10, 2), -- Arnold
+(10, 3); -- Arnold versátil
+
+SELECT j.ID, j.Nombre, j.Apellido, j.Nacionalidad, jp.JugadorID, jp.PosicionID
+FROM Jugador j
+LEFT JOIN JugadorPosicion jp ON j.ID = jp.JugadorID
+WHERE jp.JugadorID IS NULL;
+
+SELECT e.ID, e.Nombre, COUNT(j.ID) AS CantidadJugadores
+FROM Equipo e
+LEFT JOIN Jugador j ON e.ID = j.EquipoID
+GROUP BY e.ID, e.Nombre
+ORDER BY CantidadJugadores DESC
+LIMIT 1;
+
+SELECT l.ID, l.Nombre AS Liga, COUNT(j.ID) AS CantidadJugadores
+FROM Liga l
+LEFT JOIN Equipo e ON l.ID = e.LigaID
+LEFT JOIN Jugador j ON e.ID = j.EquipoID
+GROUP BY l.ID, l.Nombre
+ORDER BY CantidadJugadores DESC;
+
+SELECT e.ID, e.Nombre, COUNT(j.ID) AS CantidadJugadores
+FROM Equipo e
+LEFT JOIN Jugador j ON e.ID = j.EquipoID
+GROUP BY e.ID, e.Nombre
+HAVING COUNT(j.ID) > (
+    SELECT AVG(cantidad_jugadores)
+    FROM (
+        SELECT COUNT(j2.ID) AS cantidad_jugadores
+        FROM Equipo e2
+        LEFT JOIN Jugador j2 ON e2.ID = j2.EquipoID
+        GROUP BY e2.ID
+    ) t
+);
+
+SELECT en.ID, en.Nombre, en.Apellido, en.Nacionalidad,
+       eq.Nombre AS Equipo, l.Pais AS PaisLiga
+FROM Entrenador en
+JOIN Equipo eq ON en.EquipoID = eq.ID
+JOIN Liga l ON eq.LigaID = l.ID
+WHERE en.Nacionalidad <> l.Pais;
+
+SELECT j.ID, j.Nombre, j.Apellido, j.Nacionalidad,
+       eq.Nombre AS Equipo, en.Nombre AS NombreEntrenador, en.Apellido AS ApellidoEntrenador
+FROM Jugador j
+JOIN Equipo eq ON j.EquipoID = eq.ID
+JOIN Entrenador en ON en.EquipoID = eq.ID
+WHERE j.Nacionalidad = en.Nacionalidad;
+
+SELECT p.ID, p.Nombre, COUNT(jp.JugadorID) AS CantidadJugadores
+FROM Posicion p
+JOIN JugadorPosicion jp ON p.ID = jp.PosicionID
+GROUP BY p.ID, p.Nombre
+ORDER BY CantidadJugadores DESC
+LIMIT 1;
+
+SELECT p.ID, p.Nombre, COUNT(jp.JugadorID) AS CantidadJugadores
+FROM Posicion p
+LEFT JOIN JugadorPosicion jp ON p.ID = jp.PosicionID
+GROUP BY p.ID, p.Nombre
+ORDER BY CantidadJugadores ASC
+LIMIT 1;
+
+SELECT en.ID, en.Nombre, en.Apellido, en.Nacionalidad, eq.Nombre AS Equipo
+FROM Entrenador en
+JOIN Equipo eq ON en.EquipoID = eq.ID
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Jugador j
+    WHERE j.EquipoID = eq.ID
+      AND j.Nacionalidad = en.Nacionalidad
+);
+
+SELECT DISTINCT
+    j.ID,
+    j.Nombre,
+    j.Apellido,
+    eq.Nombre AS Equipo,
+    p.Nombre AS PosicionUnica
+FROM Jugador j
+JOIN Equipo eq ON j.EquipoID = eq.ID
+JOIN JugadorPosicion jp ON j.ID = jp.JugadorID
+JOIN Posicion p ON jp.PosicionID = p.ID
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Jugador j2
+    JOIN JugadorPosicion jp2 ON j2.ID = jp2.JugadorID
+    WHERE j2.EquipoID = j.EquipoID
+      AND j2.ID <> j.ID
+      AND jp2.PosicionID = jp.PosicionID
+);
